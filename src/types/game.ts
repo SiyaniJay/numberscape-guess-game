@@ -14,12 +14,14 @@ export interface Player {
 }
 
 export interface GameState {
-  phase: 'setup' | 'difficulty' | 'players' | 'playing' | 'finished';
+  phase: 'players' | 'playing' | 'finished' | 'round_end';
   difficulty: GameDifficulty | null;
   players: Player[];
   currentPlayerIndex: number;
   targetNumber: number;
   winner: string | null;
+  scores: Record<string, number>;
+  roundNumber: number;
   closestGuess: {
     player: string | null;
     guess: number | null;
@@ -36,33 +38,10 @@ export interface GuessResult {
   attemptsLeft: number;
 }
 
-export const DIFFICULTIES: Record<string, GameDifficulty> = {
-  easy: {
-    name: 'easy',
-    range: [1, 50],
-    maxAttempts: 12,
-    tag: 'Breeze 🌬️',
-    description: 'Perfect for beginners'
-  },
-  normal: {
-    name: 'normal',
-    range: [1, 100],
-    maxAttempts: 10,
-    tag: 'Classic 🎯',
-    description: 'The standard experience'
-  },
-  hard: {
-    name: 'hard',
-    range: [1, 200],
-    maxAttempts: 9,
-    tag: 'Challenger 🧩',
-    description: 'For experienced players'
-  },
-  chaos: {
-    name: 'chaos',
-    range: [1, 500],
-    maxAttempts: 8,
-    tag: 'Chaos 🌀',
-    description: 'Ultimate challenge'
-  }
+export const ICC_DIFFICULTY: GameDifficulty = {
+  name: 'icc_classic',
+  range: [1, 100],
+  maxAttempts: 10,
+  tag: 'ICC Classic 🏏',
+  description: 'Official ICC format: 1-100, 10 attempts'
 };

@@ -4,19 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Flame, Snowflake, Lightbulb, Target, Crown, Trophy } from "lucide-react";
+import { Flame, Snowflake, Lightbulb, Target } from "lucide-react";
 import { GameState, GuessResult } from "@/types/game";
 import { calculateHeatLevel, getHeatMessage, getRandomFeedback, generateHint, getEncouragingMessage } from "@/utils/gameLogic";
 import { useToast } from "@/hooks/use-toast";
+import iccLogo from "@/assets/icc-logo.png";
 
 interface GameInterfaceProps {
   gameState: GameState;
   onGuess: (guess: number) => void;
   onHint: () => void;
-  onGameEnd: () => void;
 }
 
-export function GameInterface({ gameState, onGuess, onHint, onGameEnd }: GameInterfaceProps) {
+export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps) {
   const [currentGuess, setCurrentGuess] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [lastHint, setLastHint] = useState("");
@@ -69,66 +69,7 @@ export function GameInterface({ gameState, onGuess, onHint, onGameEnd }: GameInt
     }
   };
 
-  if (isGameOver) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl border-primary/20 animate-slide-up">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              {gameState.winner ? (
-                <Crown className="w-16 h-16 text-yellow-500 animate-pulse" />
-              ) : (
-                <Trophy className="w-16 h-16 text-primary animate-pulse" />
-              )}
-            </div>
-            <CardTitle className="text-3xl bg-gradient-gaming bg-clip-text text-transparent">
-              {gameState.winner ? `🎉 ${gameState.winner} Wins!` : 'Game Over!'}
-            </CardTitle>
-            <CardDescription className="text-lg">
-              The number was <span className="text-primary font-bold">{gameState.targetNumber}</span>
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <h3 className="text-xl font-semibold text-center">Final Leaderboard</h3>
-              {gameState.players
-                .sort((a, b) => a.attempts - b.attempts)
-                .map((player, index) => (
-                  <div key={player.name} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <div className="flex items-center gap-3">
-                      <Badge variant={index === 0 ? "default" : "outline"}>
-                        #{index + 1}
-                      </Badge>
-                      <span className="font-medium">
-                        {player.name}
-                        {player.name === gameState.winner && " 👑"}
-                      </span>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {player.attempts} attempts, {player.hintsUsed} hints
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {!gameState.winner && gameState.closestGuess.player && (
-              <div className="text-center p-4 rounded-lg bg-accent/10 border border-accent/20">
-                <p className="text-accent">
-                  Closest guess: <strong>{gameState.closestGuess.player}</strong> with{" "}
-                  <strong>{gameState.closestGuess.guess}</strong> (off by {gameState.closestGuess.difference})
-                </p>
-              </div>
-            )}
-
-            <Button variant="gaming" size="lg" className="w-full" onClick={onGameEnd}>
-              Play Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (isGameOver) return null;
 
   return (
     <div className="min-h-screen p-4">
@@ -137,19 +78,39 @@ export function GameInterface({ gameState, onGuess, onHint, onGameEnd }: GameInt
         <Card className="border-primary/20">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl bg-gradient-gaming bg-clip-text text-transparent">
-                  NUMBERSCAPE
-                </CardTitle>
-                <CardDescription>
-                  {gameState.difficulty.tag} • Range: {min}-{max}
-                </CardDescription>
+              <div className="flex items-center gap-4">
+                <img src={iccLogo} alt="ICC Logo" className="h-10 w-auto" />
+                <div>
+                  <CardTitle className="text-2xl bg-gradient-gaming bg-clip-text text-transparent">
+                    ICC Number Challenge
+                  </CardTitle>
+                  <CardDescription>
+                    Round {gameState.roundNumber} • Range: {min}-{max}
+                  </CardDescription>
+                </div>
               </div>
               <Badge variant="outline" className="border-primary text-primary">
                 Target: ???
               </Badge>
             </div>
           </CardHeader>
+        </Card>
+
+        {/* Scoreboard */}
+        <Card className="border-accent/20">
+          <CardHeader>
+            <CardTitle className="text-lg text-center">Scoreboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(gameState.scores).map(([playerName, score]) => (
+                <div key={playerName} className="text-center p-3 rounded-lg bg-secondary/50">
+                  <div className="font-medium">{playerName}</div>
+                  <div className="text-2xl font-bold text-primary">{score}</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
         </Card>
 
         {/* Current Player */}

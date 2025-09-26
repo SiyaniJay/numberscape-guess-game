@@ -1,15 +1,17 @@
 import { useState, useCallback } from 'react';
-import { GameState, GameDifficulty, Player, GuessResult } from '@/types/game';
+import { GameState, GameDifficulty, Player, GuessResult, ICC_DIFFICULTY } from '@/types/game';
 import { calculateHeatLevel } from '@/utils/gameLogic';
 
 export function useGameState() {
   const [gameState, setGameState] = useState<GameState>({
-    phase: 'difficulty',
-    difficulty: null,
+    phase: 'players',
+    difficulty: ICC_DIFFICULTY,
     players: [],
     currentPlayerIndex: 0,
     targetNumber: 0,
     winner: null,
+    scores: {},
+    roundNumber: 1,
     closestGuess: {
       player: null,
       guess: null,
@@ -18,13 +20,6 @@ export function useGameState() {
     gameHistory: []
   });
 
-  const setDifficulty = useCallback((difficulty: GameDifficulty) => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'players',
-      difficulty
-    }));
-  }, []);
 
   const startGame = useCallback((playerNames: string[]) => {
     const players: Player[] = playerNames.map(name => ({
@@ -34,7 +29,8 @@ export function useGameState() {
       isActive: true
     }));
 
-    const [min, max] = gameState.difficulty!.range;
+    const scores = playerNames.reduce((acc, name) => ({ ...acc, [name]: 0 }), {});
+    const [min, max] = ICC_DIFFICULTY.range;
     const targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
 
     setGameState(prev => ({
@@ -44,6 +40,8 @@ export function useGameState() {
       targetNumber,
       currentPlayerIndex: 0,
       winner: null,
+      scores,
+      roundNumber: 1,
       closestGuess: {
         player: null,
         guess: null,
@@ -51,7 +49,7 @@ export function useGameState() {
       },
       gameHistory: []
     }));
-  }, [gameState.difficulty]);
+  }, []);
 
   const makeGuess = useCallback((guess: number) => {
     if (!gameState.difficulty || gameState.phase !== 'playing') return;
@@ -90,11 +88,15 @@ export function useGameState() {
 
     // Check for win condition
     if (result === 'correct') {
+      const updatedScores = { ...gameState.scores };
+      updatedScores[currentPlayer.name] = (updatedScores[currentPlayer.name] || 0) + 1;
+      
       setGameState(prev => ({
         ...prev,
-        phase: 'finished',
+        phase: 'round_end',
         winner: currentPlayer.name,
         players: updatedPlayers,
+        scores: updatedScores,
         gameHistory: [...prev.gameHistory, guessResult],
         closestGuess
       }));
@@ -109,7 +111,7 @@ export function useGameState() {
     if (allPlayersExhausted) {
       setGameState(prev => ({
         ...prev,
-        phase: 'finished',
+        phase: 'round_end',
         players: updatedPlayers,
         gameHistory: [...prev.gameHistory, guessResult],
         closestGuess
@@ -151,14 +153,43 @@ export function useGameState() {
     }));
   }, [gameState]);
 
+  const startNewRound = useCallback(() => {
+    const [min, max] = ICC_DIFFICULTY.range;
+    const targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    
+    const resetPlayers = gameState.players.map(player => ({
+      ...player,
+      attempts: 0,
+      hintsUsed: 0
+    }));
+
+    setGameState(prev => ({
+      ...prev,
+      phase: 'playing',
+      players: resetPlayers,
+      targetNumber,
+      currentPlayerIndex: 0,
+      winner: null,
+      roundNumber: prev.roundNumber + 1,
+      closestGuess: {
+        player: null,
+        guess: null,
+        difference: Infinity
+      },
+      gameHistory: []
+    }));
+  }, [gameState.players, gameState.roundNumber]);
+
   const resetGame = useCallback(() => {
     setGameState({
-      phase: 'difficulty',
-      difficulty: null,
+      phase: 'players',
+      difficulty: ICC_DIFFICULTY,
       players: [],
       currentPlayerIndex: 0,
       targetNumber: 0,
       winner: null,
+      scores: {},
+      roundNumber: 1,
       closestGuess: {
         player: null,
         guess: null,
@@ -168,21 +199,12 @@ export function useGameState() {
     });
   }, []);
 
-  const goBackToDifficulty = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'difficulty',
-      players: []
-    }));
-  }, []);
-
   return {
     gameState,
-    setDifficulty,
     startGame,
     makeGuess,
     useHint,
-    resetGame,
-    goBackToDifficulty
+    startNewRound,
+    resetGame
   };
 }

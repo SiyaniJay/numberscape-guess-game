@@ -1,45 +1,42 @@
-import { DifficultySelector } from "@/components/game/DifficultySelector";
 import { PlayerSetup } from "@/components/game/PlayerSetup";
 import { GameInterface } from "@/components/game/GameInterface";
+import { RoundEnd } from "@/components/game/RoundEnd";
 import { useGameState } from "@/hooks/useGameState";
 
 const Index = () => {
   const {
     gameState,
-    setDifficulty,
     startGame,
     makeGuess,
     useHint,
-    resetGame,
-    goBackToDifficulty
+    startNewRound,
+    resetGame
   } = useGameState();
 
   switch (gameState.phase) {
-    case 'difficulty':
-      return <DifficultySelector onSelect={setDifficulty} />;
-    
     case 'players':
-      return (
-        <PlayerSetup
-          difficulty={gameState.difficulty!}
-          onStart={startGame}
-          onBack={goBackToDifficulty}
-        />
-      );
+      return <PlayerSetup onStart={startGame} />;
     
     case 'playing':
-    case 'finished':
       return (
         <GameInterface
           gameState={gameState}
           onGuess={makeGuess}
           onHint={useHint}
-          onGameEnd={resetGame}
+        />
+      );
+    
+    case 'round_end':
+      return (
+        <RoundEnd
+          gameState={gameState}
+          onNewRound={startNewRound}
+          onNewGame={resetGame}
         />
       );
     
     default:
-      return <DifficultySelector onSelect={setDifficulty} />;
+      return <PlayerSetup onStart={startGame} />;
   }
 };
 
