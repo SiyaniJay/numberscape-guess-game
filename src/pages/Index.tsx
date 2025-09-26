@@ -1,14 +1,46 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { DifficultySelector } from "@/components/game/DifficultySelector";
+import { PlayerSetup } from "@/components/game/PlayerSetup";
+import { GameInterface } from "@/components/game/GameInterface";
+import { useGameState } from "@/hooks/useGameState";
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const {
+    gameState,
+    setDifficulty,
+    startGame,
+    makeGuess,
+    useHint,
+    resetGame,
+    goBackToDifficulty
+  } = useGameState();
+
+  switch (gameState.phase) {
+    case 'difficulty':
+      return <DifficultySelector onSelect={setDifficulty} />;
+    
+    case 'players':
+      return (
+        <PlayerSetup
+          difficulty={gameState.difficulty!}
+          onStart={startGame}
+          onBack={goBackToDifficulty}
+        />
+      );
+    
+    case 'playing':
+    case 'finished':
+      return (
+        <GameInterface
+          gameState={gameState}
+          onGuess={makeGuess}
+          onHint={useHint}
+          onGameEnd={resetGame}
+        />
+      );
+    
+    default:
+      return <DifficultySelector onSelect={setDifficulty} />;
+  }
 };
 
 export default Index;
