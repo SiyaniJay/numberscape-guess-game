@@ -15,12 +15,12 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
 
   const updatePlayer = (index: number, name: string) => {
     const updated = [...players];
-    updated[index] = name || `Player ${index + 1}`;
+    updated[index] = name;
     setPlayers(updated);
   };
 
   const handleStart = () => {
-    const validPlayers = players.map(name => name.trim() || `Player ${players.indexOf(name) + 1}`);
+    const validPlayers = players.map((name, i) => name.trim() || `Player ${i + 1}`);
     onStart(validPlayers);
   };
 
