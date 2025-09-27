@@ -103,21 +103,12 @@ export function useGameState() {
       return;
     }
 
-    console.log('Current player attempts:', updatedPlayers[gameState.currentPlayerIndex].attempts);
-    console.log('Max attempts:', gameState.difficulty.maxAttempts);
-    
-    // Check if current player is out of attempts after this guess
-    const currentPlayerExhausted = updatedPlayers[gameState.currentPlayerIndex].attempts >= gameState.difficulty.maxAttempts;
-    console.log('Current player exhausted:', currentPlayerExhausted);
-    
     // Check if all players are out of attempts
     const allPlayersExhausted = updatedPlayers.every(
       player => player.attempts >= gameState.difficulty!.maxAttempts
     );
-    console.log('All players exhausted:', allPlayersExhausted);
 
     if (allPlayersExhausted) {
-      console.log('Transitioning to round_end because all players exhausted');
       setGameState(prev => ({
         ...prev,
         phase: 'round_end',
@@ -128,26 +119,11 @@ export function useGameState() {
       return;
     }
 
-    // Find next active player (only if current player is exhausted)
+    // Find next active player
     let nextPlayerIndex = gameState.currentPlayerIndex;
-    if (currentPlayerExhausted) {
-      // Find next player with attempts left
-      const activePlayerIndices = updatedPlayers
-        .map((player, index) => ({ player, index }))
-        .filter(({ player }) => player.attempts < gameState.difficulty!.maxAttempts)
-        .map(({ index }) => index);
-      
-      console.log('Active player indices:', activePlayerIndices);
-      
-      if (activePlayerIndices.length > 0) {
-        // Find next active player starting from current position
-        nextPlayerIndex = activePlayerIndices.find(index => index > gameState.currentPlayerIndex) 
-          ?? activePlayerIndices[0];
-        console.log('Next player index:', nextPlayerIndex);
-      }
-    }
-
-    console.log('Setting next player index to:', nextPlayerIndex);
+    do {
+      nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
+    } while (updatedPlayers[nextPlayerIndex].attempts >= gameState.difficulty.maxAttempts);
 
     setGameState(prev => ({
       ...prev,
