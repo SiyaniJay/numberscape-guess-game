@@ -103,6 +103,9 @@ export function useGameState() {
       return;
     }
 
+    // Check if current player is out of attempts after this guess
+    const currentPlayerExhausted = updatedPlayers[gameState.currentPlayerIndex].attempts >= gameState.difficulty.maxAttempts;
+    
     // Check if all players are out of attempts
     const allPlayersExhausted = updatedPlayers.every(
       player => player.attempts >= gameState.difficulty!.maxAttempts
@@ -119,11 +122,21 @@ export function useGameState() {
       return;
     }
 
-    // Find next active player
+    // Find next active player (only if current player is exhausted)
     let nextPlayerIndex = gameState.currentPlayerIndex;
-    do {
-      nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
-    } while (updatedPlayers[nextPlayerIndex].attempts >= gameState.difficulty.maxAttempts);
+    if (currentPlayerExhausted) {
+      // Find next player with attempts left
+      const activePlayerIndices = updatedPlayers
+        .map((player, index) => ({ player, index }))
+        .filter(({ player }) => player.attempts < gameState.difficulty!.maxAttempts)
+        .map(({ index }) => index);
+      
+      if (activePlayerIndices.length > 0) {
+        // Find next active player starting from current position
+        nextPlayerIndex = activePlayerIndices.find(index => index > gameState.currentPlayerIndex) 
+          ?? activePlayerIndices[0];
+      }
+    }
 
     setGameState(prev => ({
       ...prev,
