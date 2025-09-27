@@ -28,6 +28,7 @@ export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps
   const [min, max] = gameState.difficulty.range;
   const isGameOver = gameState.phase === 'finished';
   const lastGuess = gameState.gameHistory[gameState.gameHistory.length - 1];
+  const currentPlayerCanGuess = currentPlayer.attempts < gameState.difficulty.maxAttempts;
 
   const handleGuess = () => {
     const guess = parseInt(currentGuess);
@@ -127,10 +128,10 @@ export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps
               <div className="flex-1">
                 <div className="flex justify-between text-sm mb-1">
                   <span>Attempts Left</span>
-                  <span>{gameState.difficulty.maxAttempts - currentPlayer.attempts}</span>
+                  <span>{Math.max(0, gameState.difficulty.maxAttempts - currentPlayer.attempts)}</span>
                 </div>
                 <Progress 
-                  value={((gameState.difficulty.maxAttempts - currentPlayer.attempts) / gameState.difficulty.maxAttempts) * 100}
+                  value={((Math.max(0, gameState.difficulty.maxAttempts - currentPlayer.attempts)) / gameState.difficulty.maxAttempts) * 100}
                   className="h-2"
                 />
               </div>
@@ -141,23 +142,34 @@ export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {!currentPlayerCanGuess && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
+                <p className="text-destructive font-medium">{currentPlayer.name} is out of attempts!</p>
+              </div>
+            )}
             <div className="flex gap-2">
               <Input
                 type="number"
                 value={currentGuess}
                 onChange={(e) => setCurrentGuess(e.target.value)}
-                placeholder={`Enter ${min}-${max}`}
+                placeholder={currentPlayerCanGuess ? `Enter ${min}-${max}` : "No attempts left"}
                 min={min}
                 max={max}
                 className="flex-1"
-                onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
+                disabled={!currentPlayerCanGuess}
+                onKeyDown={(e) => e.key === 'Enter' && currentPlayerCanGuess && handleGuess()}
               />
-              <Button variant="gaming" onClick={handleGuess} disabled={!currentGuess}>
+              <Button 
+                variant="gaming" 
+                onClick={handleGuess} 
+                disabled={!currentGuess || !currentPlayerCanGuess}
+              >
                 Guess!
               </Button>
               <Button
                 variant="outline"
                 onClick={handleHint}
+                disabled={!currentPlayerCanGuess}
                 className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
               >
                 <Lightbulb className="w-4 h-4 mr-2" />
