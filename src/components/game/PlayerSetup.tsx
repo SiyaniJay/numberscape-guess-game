@@ -11,7 +11,7 @@ interface PlayerSetupProps {
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [players, setPlayers] = useState<string[]>(["Player 1", "Player 2", "Player 3"]);
+  const [players, setPlayers] = useState<string[]>(["Player 1", "Player 2", "Player 33"]);
 
   const updatePlayer = (index: number, name: string) => {
     const updated = [...players];
