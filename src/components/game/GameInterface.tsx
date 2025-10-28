@@ -102,7 +102,7 @@ export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps
             <CardTitle className="text-lg text-center">Scoreboard</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               {Object.entries(gameState.scores).map(([playerName, score]) => (
                 <div key={playerName} className="text-center p-3 rounded-lg bg-secondary/50">
                   <div className="font-medium">{playerName}</div>
@@ -213,7 +213,7 @@ export function GameInterface({ gameState, onGuess, onHint }: GameInterfaceProps
             <CardTitle className="text-lg">Players</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {gameState.players.map((player, index) => (
                 <div
                   key={player.name}

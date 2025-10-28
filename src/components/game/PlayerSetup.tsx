@@ -11,7 +11,7 @@ interface PlayerSetupProps {
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [players, setPlayers] = useState<string[]>(["Player 1", "Player 2"]);
+  const [players, setPlayers] = useState<string[]>(["Player 1", "Player 2", "Player 3"]);
 
   const updatePlayer = (index: number, name: string) => {
     const updated = [...players];
@@ -44,7 +44,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
             <div className="flex items-center gap-2 justify-center">
               <Users className="w-5 h-5 text-primary" />
               <span className="text-sm text-muted-foreground">
-                2 Players Required
+                3 Players Required
               </span>
             </div>
 
